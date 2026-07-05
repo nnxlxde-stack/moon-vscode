@@ -1,0 +1,209 @@
+{
+  "name": "vscode-moon",
+  "displayName": "Moon Language",
+  "description": "Moon Language support for VS Code and Cursor",
+  "version": "0.3.0",
+  "publisher": "moon-lang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nnxlxde-stack/moon-vscode"
+  },
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages"],
+  "activationEvents": ["onLanguage:moon", "onLanguage:moonfile"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "moon",
+        "aliases": ["Moon", "moon"],
+        "extensions": [".moon"],
+        "configuration": "./language-configuration.json",
+        "icon": { "light": "./icons/moon.svg", "dark": "./icons/moon.svg" }
+      },
+      {
+        "id": "moonfile",
+        "aliases": ["Moonfile", "moonfile"],
+        "filenames": ["Moonfile", "Moonfile.moon"],
+        "configuration": "./moonfile-language-configuration.json",
+        "icon": { "light": "./icons/moonfile.svg", "dark": "./icons/moonfile.svg" }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "moon",
+        "scopeName": "source.moon",
+        "path": "./syntaxes/moon.tmLanguage.json"
+      },
+      {
+        "language": "moonfile",
+        "scopeName": "source.moonfile",
+        "path": "./syntaxes/moonfile.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Moon",
+      "properties": {
+        "moon.languageServerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the moon CLI binary. Empty = auto-detect `.build/debug/moon` in workspace or `moon` on PATH."
+        },
+        "moon.logging.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Write Moon LSP diagnostics to the Moon output channel."
+        },
+        "moon.logging.verbose": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include per-request completion logs in the Moon output channel."
+        },
+        "moon.formatOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Format .moon files on save."
+        },
+        "moon.deepseek.apiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "DeepSeek API key for AI inline completions. Falls back to `DEEPSEEK_API_KEY` env var."
+        },
+        "moon.deepseek.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "DeepSeek API base URL override."
+        },
+        "moon.deepseek.apiFormat": {
+          "type": "string",
+          "enum": ["anthropic", "openai"],
+          "default": "anthropic",
+          "description": "DeepSeek wire format for AI requests."
+        },
+        "moon.deepseek.useBeta": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use DeepSeek beta API surface when applicable."
+        },
+        "moon.ai.inlineCompletions.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable AI ghost-text inline completions when an API key is configured."
+        },
+        "moon.ai.inlineCompletions.model": {
+          "type": "string",
+          "default": "deepseek-v4-flash",
+          "description": "Model id for AI inline completions."
+        },
+        "moon.models.defaultFlash": {
+          "type": "string",
+          "default": "deepseek-v4-flash",
+          "description": "Default flash-tier model id (synced to LSP/runtime overrides)."
+        },
+        "moon.models.defaultPro": {
+          "type": "string",
+          "default": "deepseek-v4-pro",
+          "description": "Default pro-tier model id (synced to LSP/runtime overrides)."
+        },
+        "moon.build.defaultTarget": {
+          "type": "string",
+          "default": "",
+          "description": "Default Moonfile target for Build/Run commands (empty = first target)."
+        },
+        "moon.build.runBeforeStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run `moon build` before `moon run` from the command palette."
+        },
+        "moon.build.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to moon CLI executable. Empty = auto-detect in workspace."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[moon]": {
+        "editor.formatOnSave": true,
+        "editor.quickSuggestions": {
+          "other": true,
+          "comments": false,
+          "strings": true
+        },
+        "editor.suggestOnTriggerCharacters": true,
+        "editor.wordBasedSuggestions": "off"
+      },
+      "[moonfile]": {
+        "editor.formatOnSave": false,
+        "editor.quickSuggestions": {
+          "other": true,
+          "comments": false,
+          "strings": true
+        },
+        "editor.suggest.showFiles": true,
+        "editor.suggest.showFolders": true,
+        "editor.suggestOnTriggerCharacters": true,
+        "editor.wordBasedSuggestions": "off"
+      }
+    },
+    "commands": [
+      {
+        "command": "moon.previewPrompt",
+        "title": "Moon: Preview LLM Prompt",
+        "category": "Moon"
+      },
+      {
+        "command": "moon.previewPromptAtCursor",
+        "title": "Moon: Preview Prompt at Cursor",
+        "category": "Moon"
+      },
+      {
+        "command": "moon.build",
+        "title": "Moon: Build",
+        "category": "Moon",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "moon.run",
+        "title": "Moon: Run",
+        "category": "Moon",
+        "icon": "$(run)"
+      },
+      {
+        "command": "moon.restartLanguageServer",
+        "title": "Moon: Restart Language Server",
+        "category": "Moon"
+      },
+      {
+        "command": "moon.showOutput",
+        "title": "Moon: Show Output",
+        "category": "Moon"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "moon.previewPromptAtCursor",
+          "when": "editorLangId == moon",
+          "group": "moon@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "copy-stdlib": "bun run scripts/copy-stdlib.ts",
+    "bundle-extension": "bun run scripts/bundle-extension.ts",
+    "build": "bun run bundle-extension && bun run copy-stdlib",
+    "package": "bun run build && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "typescript": "^5.7.0"
+  }
+}

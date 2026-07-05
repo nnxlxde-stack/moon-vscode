@@ -1,0 +1,17 @@
+{
+  "comments": {
+    "lineComment": "#"
+  },
+  "brackets": [["(", ")"]],
+  "autoClosingPairs": [
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" }
+  ],
+  "surroundingPairs": [
+    { "open": "\"", "close": "\"" }
+  ],
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(dependencies|targets|providers|paths|models|prompts|runtime):\\s*$|^\\s{2,}[a-zA-Z0-9_.-]+:\\s*$",
+    "decreaseIndentPattern": "^\\s*$"
+  }
+}

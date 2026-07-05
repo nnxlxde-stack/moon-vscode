@@ -1,0 +1,12 @@
+src/**
+scripts/**
+tsconfig.json
+**/*.ts
+out/**
+!out/extension.js
+node_modules/**
+.gitignore
+*.vsix
+*.zip
+.vsix-check/**
+bun.lock

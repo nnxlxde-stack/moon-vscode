@@ -1,0 +1,69 @@
+{
+  "scopeName": "source.moon",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#import" },
+    { "include": "#declaration" },
+    { "include": "#keyword" },
+    { "include": "#operator" },
+    { "include": "#multiline-string" },
+    { "include": "#string" },
+    { "include": "#type" },
+    { "include": "#number" },
+    { "include": "#model-name" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "--.*$",
+      "name": "comment.line.double-dash.moon"
+    },
+    "import": {
+      "match": "\\b(import)\\s+([A-Za-z][A-Za-z0-9_.]*)",
+      "captures": {
+        "1": { "name": "keyword.control.import.moon" },
+        "2": { "name": "support.type.module.moon" }
+      }
+    },
+    "declaration": {
+      "patterns": [
+        {
+          "match": "\\b(model|agent|data|instance|macro|main)\\b",
+          "name": "keyword.declaration.moon"
+        },
+        {
+          "match": "\\b(routes_to|storm|with|where|constraint)\\b",
+          "name": "keyword.other.moon"
+        }
+      ]
+    },
+    "keyword": {
+      "match": "\\b(do|let|pure|when|if|then|else|not|and|or|in|as)\\b",
+      "name": "keyword.control.moon"
+    },
+    "operator": {
+      "match": "(<-|::|=>|->|\\|)",
+      "name": "keyword.operator.moon"
+    },
+    "multiline-string": {
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "name": "string.quoted.triple.moon"
+    },
+    "string": {
+      "match": "\"([^\"\\\\]|\\\\.)*\"",
+      "name": "string.quoted.double.moon"
+    },
+    "type": {
+      "match": "\\b(String|Int|Float|Bool|IO|List|Unit|Code|Documentation|Requirements|Entity|Agent|Scope|Verdict|Analyzer|Reviewer|LongTerm|PullRequest|ChangedFile)\\b",
+      "name": "storage.type.moon"
+    },
+    "number": {
+      "match": "\\b[0-9]+(?:\\.[0-9]+)?\\b",
+      "name": "constant.numeric.moon"
+    },
+    "model-name": {
+      "match": "\\b(deepseek-v4-flash|deepseek-v4-pro)\\b",
+      "name": "constant.language.model.moon"
+    }
+  }
+}

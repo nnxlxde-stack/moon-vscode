@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
+  <defs>
+    <linearGradient id="mf-moon" x1="7" y1="0.5" x2="13" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5B4FC"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#mf-moon)" d="M10.4 1.4a4.2 4.2 0 1 0 2.8 7.4A5.2 5.2 0 1 1 10.4 1.4Z"/>
+  <rect x="1" y="10.2" width="11" height="1.1" rx="0.55" fill="#94A3B8"/>
+  <rect x="1" y="12.3" width="8" height="1.1" rx="0.55" fill="#64748B"/>
+  <rect x="1" y="14.4" width="10" height="1.1" rx="0.55" fill="#475569"/>
+</svg>
