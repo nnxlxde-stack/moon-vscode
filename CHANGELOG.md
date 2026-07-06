@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Fix `Moon: Restart Language Server` after a failed/crashed start (dispose + recreate client)
+
 ## 0.3.1
 
 - Windows: prepend Swift toolchain/runtime to LSP `PATH` (fixes `0xC0000135` / EPIPE crash)

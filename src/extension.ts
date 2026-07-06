@@ -13,9 +13,11 @@ import { moonBuild, moonRun } from "./moon-tasks";
 import { createServerOptions } from "./server";
 
 let client: LanguageClient | undefined;
+let extensionContext: ExtensionContext | undefined;
 let promptOutput: OutputChannel | undefined;
 let moonOutput: OutputChannel | undefined;
 let aiCompletions: { dispose: () => void } | undefined;
+let statusBar: ReturnType<typeof window.createStatusBarItem> | undefined;
 
 function logMoon(message: string): void {
   const cfg = readMoonConfig();
@@ -23,17 +25,16 @@ function logMoon(message: string): void {
   moonOutput?.appendLine(`[moon] ${message}`);
 }
 
-export function activate(context: ExtensionContext): void {
-  promptOutput = window.createOutputChannel("Moon Prompt Preview");
-  moonOutput = window.createOutputChannel("Moon");
-  moonOutput.appendLine("Moon extension activated");
-
+function logSpawnLine(context: ExtensionContext): void {
   const serverOptions = createServerOptions(context);
   const runOpts = "run" in serverOptions ? serverOptions.run : serverOptions;
-  moonOutput.appendLine(
+  moonOutput?.appendLine(
     `[moon] spawning LSP: ${runOpts.command} ${(runOpts.args ?? []).join(" ")}`,
   );
+}
 
+function buildLanguageClient(context: ExtensionContext): LanguageClient {
+  const serverOptions = createServerOptions(context);
   const clientOptions: LanguageClientOptions = {
     documentSelector: [
       { scheme: "file", language: "moon" },
@@ -46,17 +47,83 @@ export function activate(context: ExtensionContext): void {
     },
   };
 
-  client = new LanguageClient(
+  return new LanguageClient(
     "moonLanguageServer",
     "Moon Language Server",
     serverOptions,
     clientOptions,
   );
+}
 
-  const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
-  status.text = "$(sync~spin) Moon";
-  status.tooltip = "Starting Moon Language Server…";
-  status.show();
+async function disposeLanguageClient(): Promise<void> {
+  if (!client) return;
+  try {
+    await client.stop();
+  } catch (err) {
+    logMoon(`stop ignored: ${String(err)}`);
+  }
+  client.dispose();
+  client = undefined;
+}
+
+async function startLanguageServer(context: ExtensionContext): Promise<void> {
+  logSpawnLine(context);
+  client = buildLanguageClient(context);
+  await client.start();
+}
+
+function setServerStatus(state: "starting" | "running" | "error", detail?: string): void {
+  if (!statusBar) return;
+  switch (state) {
+    case "starting":
+      statusBar.text = "$(sync~spin) Moon";
+      statusBar.tooltip = "Starting Moon Language Server…";
+      break;
+    case "running":
+      statusBar.text = "$(check) Moon";
+      statusBar.tooltip = "Moon Language Server is running";
+      break;
+    case "error":
+      statusBar.text = "$(error) Moon";
+      statusBar.tooltip = detail ?? "Moon Language Server failed";
+      break;
+  }
+}
+
+async function restartLanguageServer(): Promise<void> {
+  const context = extensionContext;
+  if (!context) return;
+
+  setServerStatus("starting");
+  logMoon("restarting language server");
+  moonOutput?.show(true);
+
+  await disposeLanguageClient();
+
+  try {
+    await startLanguageServer(context);
+    setServerStatus("running");
+    logMoon("language server restarted");
+    void window.showInformationMessage("Moon: language server restarted");
+  } catch (err) {
+    const message = String(err);
+    setServerStatus("error", message);
+    moonOutput?.appendLine(`[error] language server restart failed: ${message}`);
+    void window.showErrorMessage(
+      "Moon: language server failed to restart. See Moon output for details.",
+    );
+  }
+}
+
+export function activate(context: ExtensionContext): void {
+  extensionContext = context;
+  promptOutput = window.createOutputChannel("Moon Prompt Preview");
+  moonOutput = window.createOutputChannel("Moon");
+  moonOutput.appendLine("Moon extension activated");
+
+  statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+  setServerStatus("starting");
+  statusBar.show();
 
   aiCompletions = registerAiCompletions(moonOutput);
 
@@ -84,13 +151,7 @@ export function activate(context: ExtensionContext): void {
       const line = editor.selection.active.line;
       await commands.executeCommand("moon.previewPrompt", uri, line);
     }),
-    commands.registerCommand("moon.restartLanguageServer", async () => {
-      if (!client) return;
-      status.text = "$(sync~spin) Moon";
-      logMoon("restarting language server");
-      await client.stop();
-      await client.start();
-    }),
+    commands.registerCommand("moon.restartLanguageServer", () => restartLanguageServer()),
     commands.registerCommand("moon.build", async () => {
       moonOutput?.show(true);
       const code = await moonBuild(moonOutput!, readMoonConfig().build.defaultTarget || undefined);
@@ -118,30 +179,29 @@ export function activate(context: ExtensionContext): void {
       aiCompletions?.dispose();
       aiCompletions = registerAiCompletions(moonOutput!) ?? undefined;
     }),
-    status,
+    statusBar!,
     { dispose: () => aiCompletions?.dispose() },
   );
 
-  void client.start().then(
+  void startLanguageServer(context).then(
     () => {
-      status.text = "$(check) Moon";
-      status.tooltip = "Moon Language Server is running";
+      setServerStatus("running");
       logMoon("language server started");
     },
     (err: unknown) => {
-      status.text = "$(error) Moon";
-      status.tooltip = `Moon Language Server failed: ${String(err)}`;
-      moonOutput?.appendLine(`[error] language server failed: ${String(err)}`);
+      const message = String(err);
+      setServerStatus("error", message);
+      moonOutput?.appendLine(`[error] language server failed: ${message}`);
       void window.showErrorMessage(
-        `Moon Language Server failed to start. Install Node.js or set moon.languageServerPath.`,
+        "Moon Language Server failed to start. Build moon-lang (`swift build`) or set moon.languageServerPath.",
       );
     },
   );
 
-  context.subscriptions.push({ dispose: () => { void client?.stop(); } });
+  context.subscriptions.push({ dispose: () => { void disposeLanguageClient(); } });
 }
 
-export function deactivate(): Promise<void> | undefined {
+export async function deactivate(): Promise<void> {
   aiCompletions?.dispose();
-  return client?.stop();
+  await disposeLanguageClient();
 }

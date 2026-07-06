@@ -2,7 +2,7 @@
   "name": "vscode-moon",
   "displayName": "Moon Language",
   "description": "Moon Language support for VS Code and Cursor",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "moon-lang",
   "license": "MIT",
   "repository": {
