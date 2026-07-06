@@ -1,50 +1,52 @@
 # Moon Language — VS Code Extension
 
-Расширение для [VS Code](https://code.visualstudio.com) и [Cursor](https://cursor.com) с подсветкой синтаксиса, LSP и командами сборки/запуска для языка [Moon](https://github.com/nnxlxde-stack/moon-lang).
+Расширение для [VS Code](https://code.visualstudio.com) и [Cursor](https://cursor.com) для языка [Moon](https://github.com/nnxlxde-stack/moon-lang).
+
+## Установка (рекомендуется)
+
+Скачайте `.vsix` из [GitHub Releases](https://github.com/nnxlxde-stack/moon-vscode/releases/latest):
+
+```bash
+code --install-extension vscode-moon-0.3.0.vsix
+```
+
+Или используйте [moon-setup](https://github.com/nnxlxde-stack/moon-setup) для полной установки toolchain + расширения.
 
 ## Возможности
 
 - Подсветка `*.moon` и `Moonfile`
-- Language Server (completion, hover, go-to-definition, diagnostics, code actions)
+- LSP через Swift `moon lsp` (completion, hover, diagnostics, code actions)
 - Форматирование при сохранении
 - Preview LLM-промптов
 - Команды **Moon: Build** и **Moon: Run**
-- Опциональные AI inline completions (DeepSeek)
 
 ## Требования
 
-- [moon-lang](https://github.com/nnxlxde-stack/moon-lang) — Swift toolchain с подкомандой `moon lsp`
-- [Bun](https://bun.sh) 1.1+ — только для сборки расширения
+- [moon-lang](https://github.com/nnxlxde-stack/moon-lang) — `swift build`, подкоманда `moon lsp`
+- Bun — только для сборки расширения из исходников
 
-## Установка из исходников
+## Сборка из исходников
 
 ```bash
 git clone https://github.com/nnxlxde-stack/moon-vscode.git
 cd moon-vscode
 bun install
-bun run build
-bun run package
-code --install-extension vscode-moon-0.3.0.vsix
+MOON_STDLIB_SOURCE=../moon-lang/stdlib bun run package
 ```
-
-Для `copy-stdlib` нужен клон `moon-lang` рядом (`../moon-lang`) или переменная `MOON_STDLIB_SOURCE`.
 
 ## Настройка LSP
 
-По умолчанию расширение ищет `moon` в:
+По умолчанию: `<workspace>/.build/debug/moon lsp` или `moon` в PATH.
 
-1. `<workspace>/.build/debug/moon` (или `moon.exe` на Windows)
-2. `<workspace>/.build/release/moon`
-3. `moon` в `PATH`
+Переопределение: `moon.languageServerPath`.
 
-Переопределение: `moon.languageServerPath` — путь к исполняемому файлу `moon`.
-
-## Связанные репозитории
+## Экосистема
 
 | Репозиторий | Описание |
 |-------------|----------|
-| [moon-lang](https://github.com/nnxlxde-stack/moon-lang) | Интерпретатор и CLI |
-| [moon-pkg](https://github.com/nnxlxde-stack/moon-pkg) | Спецификация пакетного реестра |
+| [moon-lang](https://github.com/nnxlxde-stack/moon-lang) | Интерпретатор |
+| [moon-pkg](https://github.com/nnxlxde-stack/moon-pkg) | Пакеты |
+| [moon-setup](https://github.com/nnxlxde-stack/moon-setup) | Установка |
 
 ## Лицензия
 

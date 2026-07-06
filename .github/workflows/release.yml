@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: moon-vscode
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nnxlxde-stack/moon-lang
+          path: moon-lang
+          sparse-checkout: |
+            stdlib
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install and build VSIX
+        working-directory: moon-vscode
+        env:
+          MOON_STDLIB_SOURCE: ${{ github.workspace }}/moon-lang/stdlib
+        run: |
+          bun install
+          bun run package
+          ls -la *.vsix
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: moon-vscode/vscode-moon-*.vsix
+          generate_release_notes: true
