@@ -1,13 +1,46 @@
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import * as path from "path";
 import { workspace, type ExtensionContext } from "vscode";
 import { type ServerOptions, TransportKind } from "vscode-languageclient/node";
 
-function envWithStdlib(stdlibPath: string | undefined): NodeJS.ProcessEnv {
+function swiftBinDirsOnWindows(): string[] {
+  if (process.platform !== "win32") return [];
+
+  const localAppData = process.env.LOCALAPPDATA;
+  if (!localAppData) return [];
+
+  const dirs: string[] = [];
+  const roots = [
+    path.join(localAppData, "Programs", "Swift", "Runtimes"),
+    path.join(localAppData, "Programs", "Swift", "Toolchains"),
+  ];
+
+  for (const root of roots) {
+    if (!existsSync(root)) continue;
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const bin = path.join(root, entry.name, "usr", "bin");
+      if (existsSync(bin)) dirs.push(bin);
+    }
+  }
+
+  return dirs;
+}
+
+function prependPath(env: NodeJS.ProcessEnv, entries: string[]): void {
+  if (entries.length === 0) return;
+  const key = process.platform === "win32" ? "Path" : "PATH";
+  const current = env[key] ?? "";
+  const prefix = entries.join(path.delimiter);
+  env[key] = current ? `${prefix}${path.delimiter}${current}` : prefix;
+}
+
+function envForMoonServer(stdlibPath: string | undefined): NodeJS.ProcessEnv {
   const env = { ...process.env };
   if (stdlibPath && existsSync(stdlibPath)) {
     env.MOON_STDLIB = stdlibPath;
   }
+  prependPath(env, swiftBinDirsOnWindows());
   return env;
 }
 
@@ -24,6 +57,15 @@ function moonBinaryCandidates(root?: string): string[] {
       path.join(root, ".build", "debug", exe),
       path.join(root, ".build", "release", exe),
     );
+
+    const buildRoot = path.join(root, ".build");
+    if (existsSync(buildRoot)) {
+      for (const entry of readdirSync(buildRoot, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        candidates.push(path.join(buildRoot, entry.name, "debug", exe));
+        candidates.push(path.join(buildRoot, entry.name, "release", exe));
+      }
+    }
   }
 
   candidates.push(exe);
@@ -48,7 +90,7 @@ export function createServerOptions(context: ExtensionContext): ServerOptions {
 
   const bundledStdlib = path.join(context.extensionPath, "stdlib");
   const stdlibPath = existsSync(bundledStdlib) ? bundledStdlib : undefined;
-  const env = envWithStdlib(stdlibPath);
+  const env = envForMoonServer(stdlibPath);
   const root = workspaceRoot();
 
   if (override) {

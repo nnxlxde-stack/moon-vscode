@@ -2,7 +2,7 @@
   "name": "vscode-moon",
   "displayName": "Moon Language",
   "description": "Moon Language support for VS Code and Cursor",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "moon-lang",
   "license": "MIT",
   "repository": {
@@ -48,7 +48,7 @@
         "moon.languageServerPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the moon CLI binary. Empty = auto-detect `.build/debug/moon` in workspace or `moon` on PATH."
+          "description": "Path to the moon CLI binary. Empty = auto-detect `.build/**/debug/moon` in workspace or `moon` on PATH."
         },
         "moon.logging.enabled": {
           "type": "boolean",

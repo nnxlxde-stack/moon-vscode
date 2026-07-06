@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- Windows: prepend Swift toolchain/runtime to LSP `PATH` (fixes `0xC0000135` / EPIPE crash)
+- Auto-detect `.build/<triple>/debug/moon.exe` on Windows
+
 ## 0.3.0
 
 - Extracted from moon-lang monorepo into standalone repository
